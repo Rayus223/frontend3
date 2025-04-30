@@ -33,7 +33,7 @@
             <h1>Parent Registration</h1>
             <p class="form-description">Welcome! Please fill out the form below to register as a parent.</p>
 
-            <form id="parentForm" class="application-form">
+            <form id="parentForm" class="application-form" novalidate>
                 <!-- Captcha/Verification Section - Will appear after multiple submissions -->
                 <div id="verificationSection" class="form-section" style="display: none;">
                     <h3><i class="fas fa-shield-alt"></i> Verification</h3>
@@ -807,7 +807,9 @@ document.getElementById('parentForm').addEventListener('submit', async function(
     }
   }
   
-  if (!document.getElementById('subject').value) {
+  const subjectField = document.getElementById('subject');
+  if (!subjectField.value) {
+    Swal.fire({
     Swal.fire({
       icon: 'error',
       title: 'Error',
