@@ -624,6 +624,16 @@
     // Check submission count when page loads
     document.addEventListener('DOMContentLoaded', function() {
         checkSubmissionCount();
+
+       
+        // Initialize the subject grid when page loads
+        document.getElementById('grade').addEventListener('change', updateSubjects);
+        
+        // If grade is already selected, update subjects right away
+        if (document.getElementById('grade').value) {
+            updateSubjects();
+        }
+     
     });
 
     function getSubjectIcon(subject) {
@@ -779,8 +789,7 @@
     
   
 
-// Add event listener to grade select
-document.getElementById('grade').addEventListener('change', updateSubjects);
+
 
 // Update form submission handler
 document.getElementById('parentForm').addEventListener('submit', async function(e) {
