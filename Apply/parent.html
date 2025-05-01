@@ -33,14 +33,14 @@
             <h1>Parent Registration</h1>
             <p class="form-description">Welcome! Please fill out the form below to register as a parent.</p>
 
-            <form id="parentForm" class="application-form">
+            <form id="parentForm" class="application-form" novalidate>
                 <!-- Captcha/Verification Section - Will appear after multiple submissions -->
                 <div id="verificationSection" class="form-section" style="display: none;">
                     <h3><i class="fas fa-shield-alt"></i> Verification</h3>
                     <p class="verification-message">We've noticed multiple submissions from this device. Please complete the verification below:</p>
                     <div class="form-group verification-group">
                         <label for="verificationCode" class="radio-group-label">Please enter the code: <span id="captchaText"></span></label>
-                        <input type="text" id="verificationCode" placeholder="Enter code" required>
+                        <input type="text" id="verificationCode" placeholder="Enter code">
                     </div>
                 </div>
 
@@ -48,7 +48,7 @@
                 <div class="form-section">
                   <h3><i class="fas fa-user"></i> Parent Information</h3>
                   <div class="form-group">
-                    <input type="text" id="parentName" required>
+                    <input type="text" id="parentName">
                     <label for="parentName">Parent's Full Name</label>
                   </div>
                 </div>
@@ -57,11 +57,11 @@
                 <div class="form-section">
                   <h3><i class="fas fa-address-card"></i> Contact Information</h3>
                   <div class="form-group">
-                    <input type="tel" id="phone" required>
+                    <input type="tel" id="phone">
                     <label for="phone">Phone Number</label>
                   </div>
                   <div class="form-group">
-                    <textarea id="address" required></textarea>
+                    <textarea id="address"></textarea>
                     <label for="address">Full Address</label>
                   </div>
                   <div class="form-group">
@@ -77,7 +77,7 @@
                         <label class="radio-group-label">Preferred Teacher</label>
                         <div class="radio-group">
                             <div class="radio-option">
-                                <input type="radio" id="male" name="preferredTeacher" value="male" required>
+                                <input type="radio" id="male" name="preferredTeacher" value="male">
                                 <label for="male">Male</label>
                             </div>
                             <div class="radio-option">
@@ -91,7 +91,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                    <select id="grade" required>
+                    <select id="grade">
                         <option value="" disabled selected>Select Grade</option>
                         <option value="1">Grade 1</option>
                         <option value="2">Grade 2</option>
@@ -113,11 +113,11 @@
                         <div class="subject-grid" id="subjectGrid">
                           <!-- Subjects will be dynamically populated here -->
                         </div>
-                        <input type="hidden" id="subject" required>
+                        <input type="hidden" id="subject">
                       </div>
 
                     <div class="form-group">
-                    <input type="text" id="preferredTime" required>
+                    <input type="text" id="preferredTime">
                     <label for="preferredTime">Preferred Time</label>
                     </div>
                 </div>
@@ -624,6 +624,14 @@
     // Check submission count when page loads
     document.addEventListener('DOMContentLoaded', function() {
         checkSubmissionCount();
+        
+        // Initialize the subject grid when page loads
+        document.getElementById('grade').addEventListener('change', updateSubjects);
+        
+        // If grade is already selected, update subjects right away
+        if (document.getElementById('grade').value) {
+            updateSubjects();
+        }
     });
 
     function getSubjectIcon(subject) {
@@ -779,9 +787,6 @@
     
   
 
-// Add event listener to grade select
-document.getElementById('grade').addEventListener('change', updateSubjects);
-
 // Update form submission handler
 document.getElementById('parentForm').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -791,6 +796,15 @@ document.getElementById('parentForm').addEventListener('submit', async function(
   if (verificationSection.style.display !== 'none') {
     const userCode = document.getElementById('verificationCode').value;
     const correctCode = sessionStorage.getItem('captchaCode');
+    
+    if (!userCode) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Verification Required',
+        text: 'Please enter the verification code.'
+      });
+      return;
+    }
     
     if (userCode !== correctCode) {
       Swal.fire({
@@ -807,7 +821,32 @@ document.getElementById('parentForm').addEventListener('submit', async function(
     }
   }
   
-  if (!document.getElementById('subject').value) {
+  // Validate required fields
+  const requiredFields = ['parentName', 'phone', 'address', 'grade', 'preferredTime'];
+  for (const field of requiredFields) {
+    if (!document.getElementById(field).value.trim()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Please fill out all required fields'
+      });
+      return;
+    }
+  }
+  
+  // Check if preferred teacher is selected
+  if (!document.querySelector('input[name="preferredTeacher"]:checked')) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Please select a preferred teacher'
+    });
+    return;
+  }
+  
+  // Manual validation for subjects
+  const subjectField = document.getElementById('subject');
+  if (!subjectField.value) {
     Swal.fire({
       icon: 'error',
       title: 'Error',
@@ -831,7 +870,7 @@ document.getElementById('parentForm').addEventListener('submit', async function(
     // Increment submission count before successful submission
     const submissions = incrementSubmissionCount();
     
-    const response = await fetch(`http://localhost:5000/api/parents/submit`, {
+    const response = await fetch(`https://api.dearsirhometuition.com/api/parents/submit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
