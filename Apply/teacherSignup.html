@@ -134,10 +134,10 @@
                <!-- Replace your existing upload container HTML -->
 <div class="upload-container">
     <div class="upload-box">
-        <input type="file" id="cv" accept=".pdf,.doc,.docx" required>
+        <input type="file" id="cv" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
         <label for="cv">
             <i class="fas fa-file-upload"></i>
-            <span>Choose CV (PDF, DOC, DOCX) (2MB max)</span>
+            <span>Choose CV (PDF, DOC, DOCX, JPG, JPEG, PNG) (2MB max)</span>
         </label>
         <div id="cvFileName" class="file-name"></div>
     </div>
@@ -1331,6 +1331,12 @@ select#grade:focus {
             return file.size <= limit;
         }
         
+        // Function to validate file type
+        function validateFileType(file, allowedTypes) {
+            const fileType = file.type.toLowerCase();
+            return allowedTypes.includes(fileType);
+        }
+        
         function showStep(step) {
             document.getElementById('step1').style.display = step === 1 ? 'block' : 'none';
             document.getElementById('step2').style.display = step === 2 ? 'block' : 'none';
@@ -1543,12 +1549,31 @@ select#grade:focus {
         document.getElementById('cv').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // Check file size
                 if (!validateFileSize(file, FILE_SIZE_LIMITS.CV)) {
                     alert('CV file size must be less than 2MB');
                     this.value = '';
                     document.getElementById('cvFileName').textContent = '';
                     return;
                 }
+                
+                // Check file type
+                const allowedTypes = [
+                    'application/pdf', 
+                    'application/msword', 
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'image/jpeg',
+                    'image/jpg',
+                    'image/png'
+                ];
+                
+                if (!validateFileType(file, allowedTypes)) {
+                    alert('Please upload CV in PDF, DOC, DOCX, JPG, JPEG or PNG format only');
+                    this.value = '';
+                    document.getElementById('cvFileName').textContent = '';
+                    return;
+                }
+                
                 document.getElementById('cvFileName').textContent = 
                     `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
             }
