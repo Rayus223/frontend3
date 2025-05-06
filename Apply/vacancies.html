@@ -684,13 +684,23 @@
                         // Check if teacher has already applied
                         const applications = vacancy.applications || [];
                         return !applications.some(app => {
-                            const applicationTeacherId = app.teacher?._id || app.teacher;
+                            // Ensure we're comparing strings for consistency
+                            const applicationTeacherId = app.teacher?._id 
+                                ? String(app.teacher._id) 
+                                : app.teacher 
+                                    ? String(app.teacher) 
+                                    : '';
+                            
+                            // Convert current teacher ID to string as well
+                            const currentTeacherIdStr = String(teacherId);
+                            
                             console.log('Comparing:', {
                                 applicationTeacherId,
-                                currentTeacherId: teacherId,
-                                isMatch: applicationTeacherId === teacherId
+                                currentTeacherId: currentTeacherIdStr,
+                                isMatch: applicationTeacherId === currentTeacherIdStr
                             });
-                            return applicationTeacherId === teacherId;
+                            
+                            return applicationTeacherId === currentTeacherIdStr;
                         });
                     });
 
@@ -837,7 +847,34 @@
                     });
                     return;
                 }
-
+                
+                // Get teacher ID from token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const teacherId = payload.id;
+                
+                // Check if already applied
+                const applications = vacancy.applications || [];
+                const alreadyApplied = applications.some(app => {
+                    // Ensure we're comparing strings for consistency
+                    const applicationTeacherId = app.teacher?._id 
+                        ? String(app.teacher._id) 
+                        : app.teacher 
+                            ? String(app.teacher) 
+                            : '';
+                    
+                    return applicationTeacherId === String(teacherId);
+                });
+                
+                if (alreadyApplied) {
+                    Swal.fire({
+                        title: 'Already Applied',
+                        text: 'You have already applied to this vacancy. Please wait for a response from the employer.',
+                        icon: 'info',
+                        confirmButtonColor: '#1e4d92'
+                    });
+                    return;
+                }
+                
                 // Show confirmation popup with full details
                 const confirmed = await Swal.fire({
                     title: 'Vacancy Details',
