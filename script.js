@@ -88,7 +88,7 @@ function createVacancyCard(vacancy) {
     </div>
     <div class="vacancy-meta">
       <span class="applicant-count">
-        <i class="fas fa-users"></i> ${applications.length}/5 Applicants
+        <i class="fas fa-users"></i> ${applications.length} Applicants
       </span>
     </div>
     <div class="requirements-section">
