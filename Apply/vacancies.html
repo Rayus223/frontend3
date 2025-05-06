@@ -929,7 +929,17 @@
                             updateApplicationCounter();
                             loadVacancies();
                         } else {
-                            throw new Error(retryResult.message || 'Failed to submit application');
+                            // Check if this is the "already applied" error
+                            if (retryResult.message && retryResult.message.includes('already applied')) {
+                                await Swal.fire({
+                                    title: 'Already Applied',
+                                    text: 'You have already applied to this vacancy. Please wait for a response.',
+                                    icon: 'info',
+                                    confirmButtonColor: '#1e4d92'
+                                });
+                            } else {
+                                throw new Error(retryResult.message || 'Failed to submit application');
+                            }
                         }
                     } else {
                         const result = await applyResponse.json();
@@ -946,17 +956,37 @@
                             updateApplicationCounter();
                             loadVacancies();
                         } else {
-                            throw new Error(result.message || 'Failed to submit application');
+                            // Check if this is the "already applied" error
+                            if (result.message && result.message.includes('already applied')) {
+                                await Swal.fire({
+                                    title: 'Already Applied',
+                                    text: 'You have already applied to this vacancy. Please wait for a response from the employer.',
+                                    icon: 'info',
+                                    confirmButtonColor: '#1e4d92'
+                                });
+                            } else {
+                                throw new Error(result.message || 'Failed to submit application');
+                            }
                         }
                     }
                 }
             } catch (error) {
                 console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: error.message || 'Failed to submit application',
-                    icon: 'error'
-                });
+                // Check if error message contains "already applied"
+                if (error.message && error.message.includes('already applied')) {
+                    Swal.fire({
+                        title: 'Already Applied',
+                        text: 'You have already applied to this vacancy. Please wait for a response from the employer.',
+                        icon: 'info',
+                        confirmButtonColor: '#1e4d92'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Failed to submit application',
+                        icon: 'error'
+                    });
+                }
             }
         }
 
